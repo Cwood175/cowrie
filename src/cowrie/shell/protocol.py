@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-from importlib import import_module
 import os
 import socket
 import sys
 import time
 import traceback
+from importlib import import_module
 from typing import ClassVar
 
 from twisted.conch import recvline
@@ -34,12 +34,12 @@ class HoneyPotBaseProtocol(insults.TerminalProtocol, TimeoutMixin):
         try:
             module = import_module(f"cowrie.commands.{c}")
             commands.update(module.commands)
-        except ImportError as e:
+        except ImportError:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             log.err(
                 "Failed to import command {}: {}: {}".format(
                     c,
-                    e,
+                    exc_value,
                     "".join(
                         traceback.format_exception(exc_type, exc_value, exc_traceback)
                     ),

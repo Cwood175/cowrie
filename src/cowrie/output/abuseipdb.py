@@ -41,9 +41,7 @@ from pathlib import Path
 from time import sleep, time
 
 from treq import post
-
-from twisted.internet import defer, threads
-from twisted.internet import reactor
+from twisted.internet import defer, reactor, threads
 from twisted.python import log
 from twisted.web import http
 
@@ -146,6 +144,8 @@ class Output(output.Output):
                 self.tolerant_observer(event["src_ip"], time())
 
     def intolerant_observer(self, ip, t, uname):
+        self.logbook: LogBook
+        self.reporter: Reporter
         # Checks if already reported; if yes, checks if we can rereport yet.
         # The entry for a reported IP is a tuple (None, time_reported). If IP
         # is not already in logbook, reports it immediately
@@ -158,6 +158,8 @@ class Output(output.Output):
             self.reporter.report_ip_single(ip, t, uname)
 
     def tolerant_observer(self, ip, t):
+        self.logbook: LogBook
+        self.reporter: Reporter
         # Appends the time an IP was seen to it's list in logbook. Once the
         # length of the list equals tolerance_attempts, the IP is reported.
         if ip in self.logbook:
@@ -165,7 +167,8 @@ class Output(output.Output):
                 if self.logbook[ip][0]:
                     # Evaluates true if IP not already reported. If reported,
                     # logbook entry is of the form (None, time_reported).
-                    self.logbook[ip].append(t)
+                    if isinstance(self.logbook[ip], deque):
+                        self.logbook[ip].append(t)
                     self.logbook.clean_expired_timestamps(ip, t)
 
                     if len(self.logbook[ip]) >= self.tolerance_attempts:
@@ -181,7 +184,8 @@ class Output(output.Output):
             except IndexError:
                 # If IP address was in logbook but had no entries then we're
                 # fine to re-report.
-                self.logbook[ip].append(t)
+                if isinstance(self.logbook[ip], deque):
+                    self.logbook[ip].append(t)
 
         else:
             self.logbook[ip] = deque([t], maxlen=self.tolerance_attempts)
@@ -219,6 +223,7 @@ class LogBook(dict):
         # This is the method we pass in a callLater() before we go to sleep.
         self.sleeping = False
         self.sleep_until = 0
+        self.recall = None
         self.recall = reactor.callLater(CLEAN_DUMP_SCHED, self.cleanup_and_dump_state)
         log.msg(
             eventid="cowrie.abuseipdb.wakeup",

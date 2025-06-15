@@ -11,13 +11,13 @@ import getopt
 import random
 import re
 import time
+from typing import TYPE_CHECKING
 
 from twisted.internet import error, reactor
 from twisted.python import failure, log
 
 from cowrie.core import utils
 from cowrie.shell.command import HoneyPotCommand
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -845,6 +845,8 @@ class Command_passwd(HoneyPotCommand):
             self.write("passwd: password updated successfully\n")
         self.exit()
 
+    callbacks: list[Callable[[str], None]]
+
     def lineReceived(self, line: str) -> None:
         log.msg(
             eventid="cowrie.command.success",
@@ -980,6 +982,8 @@ class Command_yes(HoneyPotCommand):
             self.write("y\n")
         self.scheduled = reactor.callLater(0.01, self.y)  # type: ignore[attr-defined]
 
+    scheduled: IDelayedCall
+
     def handle_CTRL_C(self) -> None:
         self.scheduled.cancel()
         self.exit()
@@ -1031,7 +1035,7 @@ class Command_php(HoneyPotCommand):
         "\n"
     )
 
-    VERSION = "PHP 5.3.5 (cli)\n" "Copyright (c) 1997-2010 The PHP Group\n"
+    VERSION = "PHP 5.3.5 (cli)\nCopyright (c) 1997-2010 The PHP Group\n"
 
     def start(self) -> None:
         if self.args:

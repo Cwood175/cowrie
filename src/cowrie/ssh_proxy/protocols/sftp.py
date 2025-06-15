@@ -28,11 +28,10 @@
 
 from __future__ import annotations
 
-from twisted.python import log
 from twisted.conch.ssh import filetransfer
+from twisted.python import log
 
 from cowrie.ssh_proxy.protocols import base_protocol
-
 
 # PACKETLAYOUT = {
 #     1: "SSH_FXP_INIT",
@@ -132,8 +131,8 @@ class SFTP(base_protocol.BaseProtocol):
 
         sftp_num: int = self.extract_int(1)
 
-        self.prevID: int = self.ID
-        self.ID: int = self.extract_int(4)
+        self.prevID: int = self.packetID
+        self.packetID: int = self.extract_int(4)
 
         self.path: bytes = b""
 
@@ -172,7 +171,7 @@ class SFTP(base_protocol.BaseProtocol):
                 self.theFile = self.theFile[: self.offset] + self.extract_data()
 
         elif sftp_num == filetransfer.FXP_HANDLE:
-            if self.ID == self.prevID:
+            if self.packetID == self.prevID:
                 self.handle = self.extract_string()
 
         elif sftp_num == filetransfer.FXP_READDIR:
@@ -239,7 +238,7 @@ class SFTP(base_protocol.BaseProtocol):
             self.command = b"rmdir " + self.extract_string()
 
         elif sftp_num == filetransfer.FXP_STATUS:
-            if self.ID == self.prevID:
+            if self.packetID == self.prevID:
                 code = self.extract_int(4)
                 if code in [0, 1]:
                     if b"get" not in self.command and b"put" not in self.command:

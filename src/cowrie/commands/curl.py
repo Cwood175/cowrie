@@ -2,23 +2,21 @@
 # See the COPYRIGHT file for more information
 
 from __future__ import annotations
-from http.client import responses
 
 import getopt
 import os
+from http.client import responses
 from urllib import parse
 
+import treq
 from twisted.internet import error
 from twisted.internet.defer import inlineCallbacks
 from twisted.python import log
 
-import treq
-
 from cowrie.core.artifact import Artifact
-from cowrie.core.network import communication_allowed
 from cowrie.core.config import CowrieConfig
+from cowrie.core.network import communication_allowed
 from cowrie.shell.command import HoneyPotCommand
-
 
 commands = {}
 
@@ -197,8 +195,11 @@ class Command_curl(HoneyPotCommand):
     host: str
     port: int
 
+    def start(self) -> None:
+        self._start().addErrback(self.error)
+
     @inlineCallbacks
-    def start(self):
+    def _start(self):
         try:
             optlist, args = getopt.getopt(
                 self.args, "sho:OI", ["help", "manual", "silent", "head"]
@@ -306,9 +307,13 @@ class Command_curl(HoneyPotCommand):
         # if CowrieConfig.has_option("honeypot", "out_addr"):
         #     out_addr = (CowrieConfig.get("honeypot", "out_addr"), 0)
         if self.head_request:
-            deferred = treq.head(url=url, allow_redirects=False, headers=headers, timeout=10)
+            deferred = treq.head(
+                url=url, allow_redirects=False, headers=headers, timeout=10
+            )
         else:
-            deferred = treq.get(url=url, allow_redirects=False, headers=headers, timeout=10)
+            deferred = treq.get(
+                url=url, allow_redirects=False, headers=headers, timeout=10
+            )
         return deferred
 
     def handle_CTRL_C(self) -> None:
@@ -328,7 +333,9 @@ class Command_curl(HoneyPotCommand):
             for key, values in response.headers.getAllRawHeaders():
                 decoded_key = key.decode() if isinstance(key, bytes) else key
                 for value in values:
-                    decoded_value = value.decode() if isinstance(value, bytes) else value
+                    decoded_value = (
+                        value.decode() if isinstance(value, bytes) else value
+                    )
                     self.write(f"{decoded_key}: {decoded_value}\n")
             self.exit()
             return

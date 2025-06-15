@@ -20,21 +20,17 @@ instances)."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import os
 import time
+from dataclasses import dataclass
 from threading import Lock
-from typing import Optional
 
-from twisted.internet import reactor
-from twisted.internet import threads
+from twisted.internet import reactor, threads
 from twisted.python import log
-
-from cowrie.core.config import CowrieConfig
 
 import backend_pool.libvirt.backend_service
 import backend_pool.util
-
+from cowrie.core.config import CowrieConfig
 
 POOL_STATE_CREATED = "created"
 POOL_STATE_AVAILABLE = "available"
@@ -351,7 +347,10 @@ class PoolService:
         # replenish pool until full
         to_create = self.max_vm - self.existing_pool_size()
         for _ in range(to_create):
-            dom, snap, guest_ip = self.qemu.create_guest(self.is_ip_free)
+            guest = self.qemu.create_guest(self.is_ip_free)
+            if guest is None:
+                continue
+            dom, snap, guest_ip = guest
 
             # create guest object
             self.guests.append(
@@ -403,7 +402,7 @@ class PoolService:
         )
 
     # Consumers
-    def __consumers_get_guest_ip(self, src_ip: str) -> Optional[Guest]:
+    def __consumers_get_guest_ip(self, src_ip: str) -> Guest | None:
         with self.guest_lock:
             # if ip is the same, doesn't matter if being used or not
             usable_guests = self.get_guest_states([POOL_STATE_USED, POOL_STATE_USING])
@@ -412,14 +411,14 @@ class PoolService:
                     return guest
         return None
 
-    def __consumers_get_available_guest(self) -> Optional[Guest]:
+    def __consumers_get_available_guest(self) -> Guest | None:
         with self.guest_lock:
             available_guests = self.get_guest_states([POOL_STATE_AVAILABLE])
             for guest in available_guests:
                 return guest
         return None
 
-    def __consumers_get_any_guest(self) -> Optional[Guest]:
+    def __consumers_get_any_guest(self) -> Guest | None:
         """
         try to get a VM with few clients
         """

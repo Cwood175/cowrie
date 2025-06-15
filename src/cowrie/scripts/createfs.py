@@ -87,6 +87,7 @@ def recurse(localroot, root, tree, maxdepth=100):
         except OSError:
             continue
 
+        contents = []
         entry = [
             name,
             T_FILE,
@@ -95,7 +96,7 @@ def recurse(localroot, root, tree, maxdepth=100):
             s.st_size,
             s.st_mode,
             int(s.st_mtime),
-            [],
+            contents,
             None,
             None,
         ]
@@ -116,7 +117,7 @@ def recurse(localroot, root, tree, maxdepth=100):
         elif S_ISDIR(s[ST_MODE]):
             entry[A_TYPE] = T_DIR
             if (PROC or not localpath.startswith("/proc/")) and maxdepth > 0:
-                recurse(localroot, fspath, entry[A_CONTENTS], maxdepth - 1)
+                recurse(localroot, fspath, contents, maxdepth - 1)
         elif S_ISREG(s[ST_MODE]):
             entry[A_TYPE] = T_FILE
         elif S_ISBLK(s[ST_MODE]):

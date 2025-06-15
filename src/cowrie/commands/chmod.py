@@ -71,7 +71,7 @@ class Command_chmod(HoneyPotCommand):
             return
 
         # mode has to match the regex
-        if not re.fullmatch(MODE_REGEX, mode):
+        if mode is None or not re.fullmatch(MODE_REGEX, mode):
             self.write(f"chmod: invalid mode: ‘{mode}’\n" + TRY_CHMOD_HELP_MSG)
             return
 

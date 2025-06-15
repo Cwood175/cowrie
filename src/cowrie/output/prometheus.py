@@ -10,8 +10,9 @@ from __future__ import annotations
 
 import socket
 import time
+from typing import Any
 
-from prometheus_client import start_http_server, Counter, Gauge, Histogram
+from prometheus_client import Counter, Gauge, Histogram, start_http_server
 from twisted.python import log
 
 import cowrie.core.output
@@ -101,7 +102,7 @@ class Output(cowrie.core.output.Output):
         #     3600, now=False
         # )
 
-    def write(self, event: dict) -> None:
+    def write(self, event: dict[str, Any]) -> None:
         try:
             eid = event["eventid"]
 
@@ -137,7 +138,7 @@ class Output(cowrie.core.output.Output):
                 log.msg(f"[Prometheus] Exception: {e!s}")
             py_exceptions.labels(exception=e.__class__.__name__).inc()
 
-    def _on_session_connect(self, ev: dict) -> None:
+    def _on_session_connect(self, ev: dict[str, Any]) -> None:
         transport = ev.get("protocol", "ssh")
         sensor = HOST_LABEL
         sid = ev["session"]
@@ -149,7 +150,7 @@ class Output(cowrie.core.output.Output):
         asn = ev.get("src_persist_as", "UNK")
         source_ip_total.labels(ip, asn).inc()
 
-    def _on_session_closed(self, ev: dict) -> None:
+    def _on_session_closed(self, ev: dict[str, Any]) -> None:
         sid = ev["session"]
         transport = ev.get("protocol", "ssh")
         sensor = HOST_LABEL
@@ -160,7 +161,7 @@ class Output(cowrie.core.output.Output):
         if start_ts:
             session_duration.labels(transport).observe(time.time() - start_ts)
 
-    def _on_login(self, ev: dict, *, success: bool) -> None:
+    def _on_login(self, ev: dict[str, Any], *, success: bool) -> None:
         res = "success" if success else "fail"
         user = ev.get("username", "unknown")
         passwd = ev.get("password", "")
@@ -168,18 +169,18 @@ class Output(cowrie.core.output.Output):
         if passwd:
             password_length.observe(len(str(passwd)))
 
-    def _on_command(self, ev: dict) -> None:
+    def _on_command(self, ev: dict[str, Any]) -> None:
         cmd = ev.get("input", "").strip().split(" ")[0][:30]  # first token
         commands_total.labels(cmd, HOST_LABEL).inc()
 
-    def _on_download(self, ev: dict) -> None:
+    def _on_download(self, ev: dict[str, Any]) -> None:
         proto = ev.get("shasum", "").split(":")[0] or "unknown"
         size = int(ev.get("len", 0))
         dtime = float(ev.get("duration", 0))
         dl_bytes_total.labels(proto, HOST_LABEL).inc(size)
         dl_time_hist.labels(proto).observe(dtime)
 
-    def _on_outbound(self, ev: dict) -> None:
+    def _on_outbound(self, ev: dict[str, Any]) -> None:
         dst_ip = ev.get("dst_ip", "unknown")
         dst_port = str(ev.get("dst_port", "0"))
         outbound_total.labels(dst_ip, dst_port).inc()
@@ -193,5 +194,5 @@ class Output(cowrie.core.output.Output):
     #     source_ip_card.labels(label).set(len(s))
     #     s.clear()
 
-    def stop(self):
+    def stop(self) -> None:
         pass

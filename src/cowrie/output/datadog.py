@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import json
 import platform
-
 from io import BytesIO
+
 from twisted.internet import reactor
 from twisted.python import log
 from twisted.web import client, http_headers
@@ -40,7 +40,7 @@ class Output(cowrie.core.output.Output):
     def stop(self) -> None:
         pass
 
-    def write(self, event):
+    def write(self, event: dict[str, object]) -> None:
         for i in list(event.keys()):
             # Remove twisted 15 legacy keys
             if i.startswith("log_"):
@@ -56,7 +56,7 @@ class Output(cowrie.core.output.Output):
         ]
         self.postentry(message)
 
-    def postentry(self, entry):
+    def postentry(self, entry: list[dict[str, object]]) -> None:
         base_headers = {
             b"Accept": [b"application/json"],
             b"Content-Type": [b"application/json"],
