@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools >= 65.63"]
+requires = ["setuptools >= 65.63,<66"]
 
 [project]
 name = "cowrie"
@@ -9,7 +9,7 @@ license.text="BSD-3-Clause"
 authors = [ {name = "Michel Oosterhof", email="michel@oosterhof.net"}, ]
 maintainers = [ {name = "Michel Oosterhof", email="michel@oosterhof.net"}, ]
 keywords=["ssh", "telnet", "honeypot"]
-requires-python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*, !=3.7.*, !=3.8.*, !=3.9.*, <4"
+requires-python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*, !=3.7.*, !=3.8.*, !=3.9.*, <3.15"
 readme="README.rst"
 classifiers=[
         "Development Status :: 5 - Production/Stable",
@@ -123,6 +123,9 @@ warn_unused_ignores         = true
 local_partial_types         = true
 no_implicit_reexport        = true
 
+[tool.setuptools_scm]
+write_to = "src/cowrie/_version.py"
+
 # Getting these passing should be easy
 # strict_concatenate          = true
 
@@ -137,6 +140,7 @@ disallow_any_generics       = false
 disallow_untyped_calls      = false
 
 
+[tool.pylint]
 [tool.pylint."MESSAGES CONTROL"]
 disable = ["R0801", "R0901", "R0902", "R0903", "R0904", "R0912", "R0913", "R0914", "R0915", "C0103", "C0114", "C0115", "C0116", "C0301", "W0201"]
 ignored-classes = ["twisted.internet.reactor"]

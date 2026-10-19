@@ -46,7 +46,7 @@ class TestCommunicationAllowed(unittest.TestCase):
     @inlineCallbacks
     def test_ipv6_address_blocked(self):
         # Test with a blocked IPv6 address (should return False)
-        allowed = yield communication_allowed("::1")  # Loopback address
+        allowed = yield communication_allowed("2001:db8::1")  # Example blocked address
         self.assertFalse(allowed)
 
     @inlineCallbacks
