@@ -33,6 +33,10 @@ class LibvirtBackendService:
     def __init__(self) -> None:
         # lazy import to avoid exception if not using the backend_pool
         # and libvirt not installed (#1185)
+        from typing import TYPE_CHECKING
+        if TYPE_CHECKING:
+            import libvirt
+
         import libvirt
 
         libvirt_uri: str = CowrieConfig.get(
@@ -40,7 +44,7 @@ class LibvirtBackendService:
         )
 
         # open connection to libvirt
-        self.conn = libvirt.open(libvirt_uri)
+        self.conn: "libvirt.virConnect | None" = libvirt.open(libvirt_uri)
         if self.conn is None:
             log.msg(
                 eventid="cowrie.backend_pool.libvirtd",

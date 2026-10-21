@@ -17,6 +17,7 @@ class TestCommunicationAllowed(unittest.TestCase):
             "169.254.169.254",  # Cloud metadata IP (AWS, GCP, etc.)
             "100.100.100.200",  # Alibaba Cloud metadata IP
             "127.0.0.0/8",  # Loopback addresses (localhost)
+            "::1/128",  # IPv6 loopback address
             "0.0.0.0/8",  # Reserved IP range
             "224.0.0.0/4",  # Multicast addresses
             "240.0.0.0/4",  # Reserved addresses

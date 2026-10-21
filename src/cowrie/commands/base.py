@@ -826,6 +826,8 @@ commands["id"] = Command_id
 
 
 class Command_passwd(HoneyPotCommand):
+    callbacks: list | None = None
+
     def start(self) -> None:
         self.write("Enter new UNIX password: ")
         self.protocol.password_input = True

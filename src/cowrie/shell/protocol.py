@@ -29,7 +29,7 @@ class HoneyPotBaseProtocol(insults.TerminalProtocol, TimeoutMixin):
     Base protocol for interactive and non-interactive use
     """
 
-    commands: ClassVar[dict] = {}
+    commands: dict[str, object] = {}
     for c in cowrie.commands.__all__:
         try:
             module = import_module(f"cowrie.commands.{c}")
